@@ -14,5 +14,6 @@ Autoclicking
 * Press 'p' to exit the program. 
 * The default sleep time between clicks is 0.5 seconds.
 
-Installs
-* pyautogui, pynput is required. 
+Requirements
+* pyautogui, pynput, keyboard is required. 
+* to install, run:  pip install -r requirements.txt
