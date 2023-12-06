@@ -16,4 +16,4 @@ Autoclicking
 
 Requirements
 * pyautogui, pynput, keyboard is required. 
-* to install, run:  pip install -r requirements.txt
+* to install run pip install -r requirements.txt
