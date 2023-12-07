@@ -12,6 +12,7 @@ class AutoClicker:
         self.autoclicking_active = False
         self.list_lock = Lock()
         self.add_clicks_mode = False
+        self.current_click_index = 0
         self.listener = mouse.Listener(on_click=self.on_click)
         self.listener.start()
 
@@ -66,15 +67,21 @@ class AutoClicker:
     def run_autoclicker_logic(self):
         try:
             while True:
-                if self.autoclicking_active == False:
+                if not self.autoclicking_active:
                     continue  # Exit the loop if autoclicking is not active
 
                 with self.list_lock:
-                    if self.autoclicking_active:
-                        for x, y in self.click_positions_list:
+                    list_length = len(self.click_positions_list)
+                    for i in range(self.current_click_index, self.current_click_index + list_length):
+                        if self.autoclicking_active:
+                            index = i % list_length
+                            x, y = self.click_positions_list[index]
                             print("Clicking at:", x, y)
                             pyautogui.click(x, y)
                             time.sleep(1)
+                            # Update the current index after each click
+                            self.current_click_index = i + 1
+
         except KeyboardInterrupt:
             print("Autoclicker stopped.")
 
@@ -105,6 +112,10 @@ class AutoClicker:
             print("Restarting recording")
             with self.list_lock:
                 self.click_positions_list.clear()
+        elif additional_key.name == from_first_key:
+            print("Autoclicker will start click from first position")
+            with self.list_lock:
+                self.current_click_index = 0
         elif additional_key.name == exit_key:
             sys.exit()
         return False
@@ -129,7 +140,6 @@ class AutoClicker:
                     break
                 elif key == pause_resume_key and state == keyboard.KEY_DOWN:
                     self.toggle_autoclicker()
-                    print("Entering/exiting")
 
                     # Set the flag and continue reading events to avoid missing additional keys
                     additional_key_pressed = True
