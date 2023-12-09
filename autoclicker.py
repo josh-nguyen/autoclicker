@@ -12,6 +12,7 @@ class AutoClicker:
         self.autoclicking_active = False
         self.list_lock = Lock()
         self.add_clicks_mode = False
+        self.sleep_time = 1
         self.current_click_index = 0
         self.listener = mouse.Listener(on_click=self.on_click)
         self.listener.start()
@@ -23,11 +24,14 @@ class AutoClicker:
             print(f"Added {x}, {y} to recording list")
 
     def record_click_positions(self, stop_key ='x', pause_resume_key ='p', restart_key ='r', view_list_key= 'v',
-    delete_last_key= 'd', exit_key = 'e'):
+    delete_last_key= 'd', sleep_time_key = 's', exit_key = 'e'):
         print(f"Recording started. Press '{stop_key}' to stop recording.")
         print(f"Press '{pause_resume_key}' to pause/resume recording.")
         print(f"Press '{restart_key}' to restart recording.")
         print(f"Press '{view_list_key}' to view list of clicks.")
+        print(f"Press '{delete_last_key}' to delete most recent recorded click.")
+        print(f"Press '{sleep_time_key}' to change the autoclicker speed. The default sleep time is 1 second")
+        print(f"Press '{exit_key}' to exit the program.")
 
         try:
             while True:
@@ -56,6 +60,10 @@ class AutoClicker:
                         print(self.click_positions_list)
                     elif key == delete_last_key and state == keyboard.KEY_DOWN:
                         self.click_positions_list = self.click_positions_list[:-1]
+                    elif key == sleep_time_key and state == keyboard.KEY_DOWN:
+                        user_input_time = input("Enter a sleep time (seconds): ")
+                        self.sleep_time= user_input_time
+                        print(f"Autoclicker will run on interval: {self.sleep_time} seconds. Press {stop_key} to start autoclicking")
                     elif key == exit_key:
                         sys.exit()
 
@@ -78,8 +86,7 @@ class AutoClicker:
                             x, y = self.click_positions_list[index]
                             print("Clicking at:", x, y)
                             pyautogui.click(x, y)
-                            time.sleep(1)
-                            # Update the current index after each click
+                            time.sleep(float(self.sleep_time))
                             self.current_click_index = i + 1
 
         except KeyboardInterrupt:
@@ -95,7 +102,7 @@ class AutoClicker:
 
     def handle_additional_keys(self,additional_key,add_clicks_key = 'a',
     delete_last_key='d',pause_resume_key = 'p' ,view_list_key = 'v',
-    restart_recording_key = 'r',from_first_key = '1', exit_key = 'e'):
+    restart_recording_key = 'r',from_first_key = '1', sleep_time_key = 's', exit_key = 'e'):
 
         if additional_key.name == add_clicks_key:
             print("Entering adding clicks mode")
@@ -116,14 +123,18 @@ class AutoClicker:
             print("Autoclicker will start click from first position")
             with self.list_lock:
                 self.current_click_index = 0
+        elif additional_key.name == sleep_time_key:
+            user_input_time = input("Enter a sleep time (seconds): ")
+            self.sleep_time = float(user_input_time)
+            print(f"Autoclicker will run on interval: {self.sleep_time} seconds. Press {pause_resume_key} to resume autoclicking")
         elif additional_key.name == exit_key:
             sys.exit()
         return False
 
     def run_autoclicker(self, exit_key = 'e',pause_resume_key='p'):
-        sleep_time = 1
         print(
-            f"Running autoclicker with an interval of {sleep_time} seconds. Press '{pause_resume_key}' to pause/resume")
+            f"Running autoclicker on an interval of {self.sleep_time} seconds. "
+            f"Press '{pause_resume_key}' to pause/resume")
 
         autoclicker_thread = Thread(daemon=True, target=self.run_autoclicker_logic)
         autoclicker_thread.start()
@@ -138,6 +149,7 @@ class AutoClicker:
 
                 if key == exit_key:
                     break
+
                 elif key == pause_resume_key and state == keyboard.KEY_DOWN:
                     self.toggle_autoclicker()
 
@@ -154,10 +166,6 @@ class AutoClicker:
             self.listener.stop()
             self.listener.join()
 
-    # def check_key_pressed(self, stop_key='p'):
-    #     print(f"Press {stop_key} to exit")
-    #     keyboard.wait(stop_key)
-
 if __name__ == "__main__":
     autoclicker = AutoClicker()
 
@@ -169,11 +177,7 @@ if __name__ == "__main__":
         record_thread.join()
 
         print("Autoclick beginning")
-       # exit_thread.start()
         autoclicker.run_autoclicker()
-       # exit_thread.join()
-# the autoclicekr is already doing the work so can just end the program from thr autoclicker thread
-    # will use a thread for record but not for autoclick
     except KeyboardInterrupt:
         print("CTRL+C detected. Stopping program.")
 
