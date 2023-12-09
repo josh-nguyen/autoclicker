@@ -76,7 +76,7 @@ class AutoClicker:
         try:
             while True:
                 if not self.autoclicking_active:
-                    continue  # Exit the loop if autoclicking is not active
+                    continue
 
                 with self.list_lock:
                     list_length = len(self.click_positions_list)
@@ -171,7 +171,7 @@ if __name__ == "__main__":
 
     record_thread = Thread(daemon= True, target=autoclicker.record_click_positions)
 
-    try: #autoclick.runautoclicker
+    try:
         print("Recording beginning")
         record_thread.start()
         record_thread.join()
